@@ -1,0 +1,94 @@
+// 사미반점 온라인 주문 시스템 — 데이터베이스 스키마
+// 개발: SQLite / 운영: Postgres(Supabase)로 provider만 교체하면 됩니다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── 매장 ──────────────────────────────────────
+model Store {
+  id        String   @id @default(cuid())
+  name      String   // "하남 본점" | "미사2호점"
+  slug      String   @unique // "main" | "misa2"
+  address   String?
+  phone     String?
+  createdAt DateTime @default(now())
+
+  menus  Menu[]
+  orders Order[]
+}
+
+// ── 카테고리 ──────────────────────────────────
+model Category {
+  id        String @id @default(cuid())
+  name      String
+  sortOrder Int    @default(0)
+
+  menus Menu[]
+}
+
+// ── 메뉴 ──────────────────────────────────────
+model Menu {
+  id          String   @id @default(cuid())
+  name        String
+  price       Int
+  imageUrl    String?
+  description String?
+  soldOut     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  orderItems OrderItem[]
+}
+
+// ── 주문 ──────────────────────────────────────
+enum OrderType {
+  dine_in
+  takeout
+  delivery
+}
+
+enum OrderStatus {
+  pending // 접수
+  cooking // 조리중
+  done    // 완료
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique // 사람이 보는 짧은 주문번호 (예: 0042)
+  orderType   OrderType
+  status      OrderStatus @default(pending)
+  tableNumber String?
+  totalAmount Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+
+  items OrderItem[]
+}
+
+// ── 주문 항목 ─────────────────────────────────
+model OrderItem {
+  id       String @id @default(cuid())
+  quantity Int
+  price    Int // 주문 시점 가격 (메뉴 가격이 나중에 바뀌어도 주문 기록은 보존)
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  menuId String
+  menu   Menu   @relation(fields: [menuId], references: [id])
+}

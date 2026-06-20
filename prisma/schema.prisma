@@ -52,27 +52,19 @@ model Menu {
 }
 
 // ── 주문 ──────────────────────────────────────
-enum OrderType {
-  dine_in
-  takeout
-  delivery
-}
-
-enum OrderStatus {
-  pending // 접수
-  cooking // 조리중
-  done    // 완료
-}
+// 참고: SQLite는 enum을 지원하지 않아 String으로 관리합니다.
+// orderType: "dine_in" | "takeout" | "delivery"
+// status:    "pending" | "cooking" | "done"
 
 model Order {
-  id          String      @id @default(cuid())
-  orderNumber String      @unique // 사람이 보는 짧은 주문번호 (예: 0042)
-  orderType   OrderType
-  status      OrderStatus @default(pending)
+  id          String   @id @default(cuid())
+  orderNumber String   @unique // 사람이 보는 짧은 주문번호 (예: 0042)
+  orderType   String
+  status      String   @default("pending")
   tableNumber String?
   totalAmount Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   storeId String
   store   Store  @relation(fields: [storeId], references: [id])

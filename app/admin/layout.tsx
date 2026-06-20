@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/admin/orders/search", label: "주문 조회", icon: "🔍" },
   { href: "/admin/menus", label: "메뉴 관리", icon: "🍜" },
   { href: "/admin/categories", label: "카테고리", icon: "📂" },
+  { href: "/admin/delivery", label: "배달비 설정", icon: "🛵" },
 ];
 
 function AdminShell({ children }: { children: React.ReactNode }) {

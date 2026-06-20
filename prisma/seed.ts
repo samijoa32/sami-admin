@@ -8,7 +8,7 @@ import { PrismaClient } from "@prisma/client";
 const db = new PrismaClient();
 
 async function main() {
-  // 1. 매장 생성
+  // 매장 생성 (하남 본점 단독 운영)
   const main_store = await db.store.upsert({
     where: { slug: "main" },
     update: {},
@@ -17,15 +17,6 @@ async function main() {
       slug: "main",
       address: "경기도 하남시 조정대로45 미사센텀비즈 R134,135,136",
       phone: "031-5175-3255",
-    },
-  });
-
-  const misa2 = await db.store.upsert({
-    where: { slug: "misa2" },
-    update: {},
-    create: {
-      name: "미사2호점",
-      slug: "misa2",
     },
   });
 
@@ -68,7 +59,7 @@ async function main() {
   }
 
   console.log("✅ 시드 데이터 입력 완료");
-  console.log(`   매장: ${main_store.name}, ${misa2.name}`);
+  console.log(`   매장: ${main_store.name}`);
   console.log(`   카테고리: ${categoryNames.length}개`);
   console.log(`   메뉴: ${menus.length}개`);
 }

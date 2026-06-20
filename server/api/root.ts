@@ -5,6 +5,7 @@ import { categoryRouter } from "@/server/api/routers/category";
 import { orderRouter } from "@/server/api/routers/order";
 import { adminRouter } from "@/server/api/routers/admin";
 import { authRouter } from "@/server/api/routers/auth";
+import { deliverySettingRouter } from "@/server/api/routers/deliverySetting";
 
 export const appRouter = createTRPCRouter({
   store: storeRouter,
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   order: orderRouter,
   admin: adminRouter,
   auth: authRouter,
+  deliverySetting: deliverySettingRouter,
 });
 
 export type AppRouter = typeof appRouter;

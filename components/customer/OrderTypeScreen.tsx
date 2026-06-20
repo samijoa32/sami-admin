@@ -24,6 +24,17 @@ export function OrderTypeScreen({ storeId, onBack, onOrderComplete }: Props) {
   const [error, setError] = useState("");
   const { items, totalAmount, clearCart } = useCart();
 
+  const { data: deliverySetting } = api.deliverySetting.get.useQuery();
+
+  const deliveryFee =
+    orderType === "delivery" && deliverySetting
+      ? deliverySetting.freeThreshold > 0 && totalAmount >= deliverySetting.freeThreshold
+        ? 0
+        : deliverySetting.deliveryFee
+      : 0;
+
+  const finalAmount = totalAmount + deliveryFee;
+
   const createOrder = api.order.create.useMutation({
     onSuccess: (order) => {
       clearCart();
@@ -91,6 +102,22 @@ export function OrderTypeScreen({ storeId, onBack, onOrderComplete }: Props) {
         </div>
       )}
 
+      {/* 배달비 안내 (배달 선택 시) */}
+      {orderType === "delivery" && deliverySetting && (
+        <div className="mb-6 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-700">
+          {deliveryFee === 0 ? (
+            <span>🎉 무료배달 적용 (주문금액 {deliverySetting.freeThreshold.toLocaleString()}원 이상)</span>
+          ) : (
+            <span>
+              배달비 {deliveryFee.toLocaleString()}원이 추가됩니다.
+              {deliverySetting.freeThreshold > 0 && (
+                <> ({deliverySetting.freeThreshold.toLocaleString()}원 이상 주문 시 무료)</>
+              )}
+            </span>
+          )}
+        </div>
+      )}
+
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
 
       {/* 주문 요약 */}
@@ -102,9 +129,15 @@ export function OrderTypeScreen({ storeId, onBack, onOrderComplete }: Props) {
             <span>{(item.price * item.quantity).toLocaleString()}원</span>
           </div>
         ))}
+        {orderType === "delivery" && (
+          <div className="flex justify-between py-1 text-sm text-ink-900/60">
+            <span>배달비</span>
+            <span>{deliveryFee === 0 ? "무료" : `${deliveryFee.toLocaleString()}원`}</span>
+          </div>
+        )}
         <div className="mt-2 flex justify-between border-t border-ink-900/10 pt-2 font-semibold">
           <span>합계</span>
-          <span>{totalAmount.toLocaleString()}원</span>
+          <span>{finalAmount.toLocaleString()}원</span>
         </div>
       </div>
 

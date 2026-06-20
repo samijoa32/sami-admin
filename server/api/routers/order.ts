@@ -52,19 +52,34 @@ export const orderRouter = createTRPCRouter({
       const menuMap = new Map<string, { name: string; price: number; soldOut: boolean }>(
         menus.map((m: any) => [m.id, m])
       );
-      let totalAmount = 0;
+      let menuTotal = 0;
       const orderItemsData = input.items.map((item) => {
         const menu = menuMap.get(item.menuId);
         if (!menu) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "존재하지 않는 메뉴입니다." });
         }
-        totalAmount += menu.price * item.quantity;
+        menuTotal += menu.price * item.quantity;
         return {
           menuId: item.menuId,
           quantity: item.quantity,
           price: menu.price,
         };
       });
+
+      // 배달 주문일 때만 배달비 계산 (기준 금액 이상이면 무료)
+      let deliveryFee = 0;
+      if (input.orderType === "delivery") {
+        const setting = await ctx.db.deliverySetting.upsert({
+          where: { id: "delivery_setting" },
+          update: {},
+          create: { id: "delivery_setting" },
+        });
+        const isFreeDelivery =
+          setting.freeThreshold > 0 && menuTotal >= setting.freeThreshold;
+        deliveryFee = isFreeDelivery ? 0 : setting.deliveryFee;
+      }
+
+      const totalAmount = menuTotal + deliveryFee;
 
       const orderNumber = await generateOrderNumber(ctx.db);
 
@@ -74,6 +89,7 @@ export const orderRouter = createTRPCRouter({
           storeId: input.storeId,
           orderType: input.orderType,
           tableNumber: input.tableNumber,
+          deliveryFee,
           totalAmount,
           items: { create: orderItemsData },
         },

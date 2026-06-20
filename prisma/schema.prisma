@@ -11,6 +11,14 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ── 배달비 설정 ─────────────────────────────────
+// 단일 행만 사용 (id를 고정값으로 둠)
+model DeliverySetting {
+  id              String @id @default("delivery_setting")
+  deliveryFee     Int    @default(3000)  // 기본 배달비
+  freeThreshold   Int    @default(15000) // 이 금액 이상이면 배달비 무료 (0이면 항상 부과)
+}
+
 // ── 매장 ──────────────────────────────────────
 model Store {
   id        String   @id @default(cuid())
@@ -63,7 +71,8 @@ model Order {
   orderType   String
   status      String   @default("pending")
   tableNumber String?
-  totalAmount Int
+  deliveryFee Int      @default(0) // 배달 주문일 때만 값이 들어감 (메뉴 금액 합계에는 미포함)
+  totalAmount Int      // 메뉴 합계 + 배달비
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

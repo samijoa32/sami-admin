@@ -117,17 +117,66 @@ export function MenuForm({ initialData, categories, onSubmit, onCancel, isLoadin
         {errors.price && <p className="mt-1 text-xs text-red-500">{errors.price}</p>}
       </div>
 
-      {/* 이미지 URL */}
+      {/* 이미지 */}
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700">이미지 URL</label>
+        <label className="mb-1.5 block text-sm font-medium text-gray-700">메뉴 이미지</label>
+
+        {/* 미리보기 */}
+        {form.imageUrl && (
+          <div className="mb-2 flex items-center gap-3">
+            <img
+              src={form.imageUrl}
+              alt="미리보기"
+              className="h-16 w-16 rounded-xl object-cover ring-1 ring-gray-200"
+              onError={(e) => (e.currentTarget.style.display = "none")}
+            />
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, imageUrl: "" })}
+              className="text-xs text-gray-400 underline"
+            >
+              이미지 제거
+            </button>
+          </div>
+        )}
+
+        {/* URL 입력 */}
         <input
           type="text"
-          placeholder="https://..."
+          placeholder="https://... (이미지 URL 직접 입력)"
           value={form.imageUrl}
           onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
           className={inputClass("imageUrl")}
         />
-        <p className="mt-1 text-xs text-gray-400">이미지 업로드는 추후 지원 예정입니다.</p>
+
+        {/* 파일 업로드 */}
+        <div className="mt-2">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50">
+            📷 내 컴퓨터에서 사진 선택
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                if (file.size > 2 * 1024 * 1024) {
+                  setErrors({ ...errors, imageUrl: "이미지 크기는 2MB 이하로 올려주세요." });
+                  return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                  setForm({ ...form, imageUrl: reader.result as string });
+                  setErrors({ ...errors, imageUrl: undefined });
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+          </label>
+        </div>
+        {errors.imageUrl && <p className="mt-1 text-xs text-red-500">{errors.imageUrl}</p>}
       </div>
 
       {/* 설명 */}

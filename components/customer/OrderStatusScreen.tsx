@@ -25,6 +25,8 @@ type OrderItem = {
 type OrderDetail = {
   orderNumber: string;
   status: string;
+  orderType: string;
+  deliveryFee: number;
   totalAmount: number;
   items: OrderItem[];
 };
@@ -87,6 +89,12 @@ export function OrderStatusScreen({ orderNumber, onNewOrder }: Props) {
             <span>{(item.price * item.quantity).toLocaleString()}원</span>
           </div>
         ))}
+        {order.orderType === "delivery" && (
+          <div className="flex justify-between py-1 text-sm text-ink-900/60">
+            <span>배달비</span>
+            <span>{order.deliveryFee === 0 ? "무료" : `${order.deliveryFee.toLocaleString()}원`}</span>
+          </div>
+        )}
         <div className="mt-2 flex justify-between border-t border-ink-900/10 pt-2 font-semibold">
           <span>합계</span>
           <span>{order.totalAmount.toLocaleString()}원</span>

@@ -9,9 +9,10 @@ type Props = {
   storeName: string;
   onOpenCart: () => void;
   onBack: () => void;
+  showBackButton?: boolean;
 };
 
-export function MenuScreen({ storeId, storeName, onOpenCart, onBack }: Props) {
+export function MenuScreen({ storeId, storeName, onOpenCart, onBack, showBackButton = true }: Props) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const { addItem, totalCount, totalAmount } = useCart();
 
@@ -42,9 +43,13 @@ export function MenuScreen({ storeId, storeName, onOpenCart, onBack }: Props) {
       {/* 헤더 */}
       <header className="sticky top-0 z-10 border-b border-ink-900/5 bg-[#faf8f6]/95 px-5 py-4 backdrop-blur-sm">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="text-sm text-ink-900/50">
-            ← 매장변경
-          </button>
+          {showBackButton ? (
+            <button onClick={onBack} className="text-sm text-ink-900/50">
+              ← 매장변경
+            </button>
+          ) : (
+            <div className="w-16" />
+          )}
           <h1 className="text-base font-semibold text-ink-900">{storeName}</h1>
           <div className="w-16" />
         </div>

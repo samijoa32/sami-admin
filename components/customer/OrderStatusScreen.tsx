@@ -26,6 +26,10 @@ type OrderDetail = {
   orderNumber: string;
   status: string;
   orderType: string;
+  phone: string;
+  pickupTime: string | null;
+  address: string | null;
+  paymentMethod: string | null;
   deliveryFee: number;
   totalAmount: number;
   items: OrderItem[];
@@ -79,6 +83,32 @@ export function OrderStatusScreen({ orderNumber, onNewOrder }: Props) {
             )}
           </div>
         ))}
+      </div>
+
+      {/* 주문 정보 (포장/배달 상세) */}
+      <div className="mb-4 w-full max-w-xs rounded-2xl bg-white p-4 text-left text-sm ring-1 ring-ink-900/5">
+        <div className="flex justify-between py-1 text-ink-900/60">
+          <span>연락처</span>
+          <span>{order.phone}</span>
+        </div>
+        {order.orderType === "takeout" && order.pickupTime && (
+          <div className="flex justify-between py-1 text-ink-900/60">
+            <span>픽업 예정시간</span>
+            <span>{order.pickupTime}</span>
+          </div>
+        )}
+        {order.orderType === "delivery" && (
+          <>
+            <div className="flex justify-between py-1 text-ink-900/60">
+              <span>배달 주소</span>
+              <span className="text-right">{order.address}</span>
+            </div>
+            <div className="flex justify-between py-1 text-ink-900/60">
+              <span>결제 방법</span>
+              <span>{order.paymentMethod === "card" ? "카드결제" : "현금결제"}</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* 주문 내역 */}

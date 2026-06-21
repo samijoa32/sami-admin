@@ -62,7 +62,8 @@ export const adminRouter = createTRPCRouter({
             ? {
                 OR: [
                   { orderNumber: { contains: searchTerm } },
-                  { tableNumber: { contains: searchTerm } },
+                  { phone: { contains: searchTerm } },
+                  { address: { contains: searchTerm } },
                 ],
               }
             : {}),
@@ -78,7 +79,10 @@ export const adminRouter = createTRPCRouter({
         orderNumber: o.orderNumber,
         storeName: o.store.name,
         orderType: o.orderType,
-        tableNumber: o.tableNumber,
+        phone: o.phone,
+        pickupTime: o.pickupTime,
+        address: o.address,
+        paymentMethod: o.paymentMethod,
         status: o.status,
         totalAmount: o.totalAmount,
         createdAt: o.createdAt,

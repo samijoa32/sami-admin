@@ -14,8 +14,11 @@ export const orderRouter = createTRPCRouter({
     .input(
       z.object({
         storeId: z.string(),
-        orderType: z.enum(["dine_in", "takeout", "delivery"]),
-        tableNumber: z.string().optional(),
+        orderType: z.enum(["takeout", "delivery"]),
+        phone: z.string().min(1, "전화번호를 입력해주세요."),
+        pickupTime: z.string().optional(), // 포장 주문
+        address: z.string().optional(), // 배달 주문
+        paymentMethod: z.enum(["card", "cash"]).optional(), // 배달 주문
         items: z
           .array(
             z.object({
@@ -27,12 +30,22 @@ export const orderRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // 홀 주문인데 테이블 번호가 없으면 거부
-      if (input.orderType === "dine_in" && !input.tableNumber?.trim()) {
+      // 포장 주문: 픽업 예정시간 필수
+      if (input.orderType === "takeout" && !input.pickupTime?.trim()) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "테이블 번호를 입력해주세요.",
+          message: "픽업 예정시간을 선택해주세요.",
         });
+      }
+
+      // 배달 주문: 주소·결제방법 필수
+      if (input.orderType === "delivery") {
+        if (!input.address?.trim()) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "배달 주소를 입력해주세요." });
+        }
+        if (!input.paymentMethod) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "결제 방법을 선택해주세요." });
+        }
       }
 
       // 메뉴 정보 조회 (가격 검증 + 품절 확인)
@@ -88,7 +101,10 @@ export const orderRouter = createTRPCRouter({
           orderNumber,
           storeId: input.storeId,
           orderType: input.orderType,
-          tableNumber: input.tableNumber,
+          phone: input.phone,
+          pickupTime: input.orderType === "takeout" ? input.pickupTime : undefined,
+          address: input.orderType === "delivery" ? input.address : undefined,
+          paymentMethod: input.orderType === "delivery" ? input.paymentMethod : undefined,
           deliveryFee,
           totalAmount,
           items: { create: orderItemsData },

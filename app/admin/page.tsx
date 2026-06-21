@@ -15,7 +15,6 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const ORDER_TYPE_LABELS: Record<string, string> = {
-  dine_in: "홀",
   takeout: "포장",
   delivery: "배달",
 };
@@ -25,7 +24,10 @@ type RecentOrder = {
   orderNumber: string;
   status: string;
   orderType: string;
-  tableNumber: string | null;
+  phone: string;
+  pickupTime: string | null;
+  address: string | null;
+  paymentMethod: string | null;
   totalAmount: number;
   store: { name: string };
   items: { id: string; quantity: number; menu: { name: string } }[];
@@ -75,9 +77,17 @@ export default function AdminDashboardPage() {
 
                 <div className="w-24 text-sm text-gray-600">{order.store.name}</div>
 
-                <div className="w-16 text-sm text-gray-500">
-                  {ORDER_TYPE_LABELS[order.orderType]}
-                  {order.tableNumber && ` ${order.tableNumber}번`}
+                <div className="w-40 text-sm text-gray-500">
+                  <span className="font-medium">{ORDER_TYPE_LABELS[order.orderType]}</span>
+                  <span className="ml-1 text-gray-400">{order.phone}</span>
+                  {order.orderType === "takeout" && order.pickupTime && (
+                    <div className="text-xs text-gray-400">픽업 {order.pickupTime}</div>
+                  )}
+                  {order.orderType === "delivery" && order.address && (
+                    <div className="truncate text-xs text-gray-400" title={order.address}>
+                      {order.address}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-1">

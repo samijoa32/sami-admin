@@ -10,7 +10,10 @@ type OrderRow = {
   orderNumber: string;
   storeName: string;
   orderType: string;
-  tableNumber: string | null;
+  phone: string;
+  pickupTime: string | null;
+  address: string | null;
+  paymentMethod: string | null;
   status: string;
   totalAmount: number;
   createdAt: string | Date;
@@ -117,10 +120,10 @@ export default function OrderSearchPage() {
 
           {/* 검색어 */}
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-500">주문번호 / 테이블</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-500">주문번호 / 전화번호 / 주소</label>
             <input
               type="text"
-              placeholder="주문번호 또는 테이블 검색"
+              placeholder="주문번호, 전화번호, 주소로 검색"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -177,7 +180,8 @@ export default function OrderSearchPage() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400">주문번호</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400">매장</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400">타입</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400">테이블</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400">연락처</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400">상세</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400">상태</th>
                   <th className="px-6 py-3 text-right text-xs font-semibold text-gray-400">금액</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-400">시각</th>
@@ -191,10 +195,26 @@ export default function OrderSearchPage() {
                     </td>
                     <td className="px-6 py-3.5 text-sm text-gray-700">{order.storeName}</td>
                     <td className="px-6 py-3.5 text-sm text-gray-500">
-                      {order.orderType === "dine_in" ? "홀" : order.orderType === "takeout" ? "포장" : "배달"}
+                      {order.orderType === "takeout" ? "포장" : "배달"}
                     </td>
                     <td className="px-6 py-3.5 text-sm text-gray-500">
-                      {order.tableNumber ?? "-"}
+                      {order.phone}
+                    </td>
+                    <td className="px-6 py-3.5 max-w-[220px] truncate text-sm text-gray-500">
+                      {order.orderType === "takeout"
+                        ? order.pickupTime
+                          ? `픽업 ${order.pickupTime}`
+                          : "-"
+                        : (
+                          <span title={order.address ?? ""}>
+                            {order.address}
+                            {order.paymentMethod && (
+                              <span className="ml-1 text-gray-400">
+                                ({order.paymentMethod === "card" ? "카드" : "현금"})
+                              </span>
+                            )}
+                          </span>
+                        )}
                     </td>
                     <td data-testid="order-status-cell" className="px-6 py-3.5">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_COLORS[order.status] ?? ""}`}>

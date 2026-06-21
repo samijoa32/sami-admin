@@ -62,19 +62,23 @@ model Menu {
 
 // ── 주문 ──────────────────────────────────────
 // 참고: SQLite는 enum을 지원하지 않아 String으로 관리합니다.
-// orderType: "dine_in" | "takeout" | "delivery"
+// orderType: "takeout" | "delivery"
 // status:    "pending" | "cooking" | "done"
+// paymentMethod (배달 주문만): "card" | "cash"
 
 model Order {
-  id          String   @id @default(cuid())
-  orderNumber String   @unique // 사람이 보는 짧은 주문번호 (예: 0042)
-  orderType   String
-  status      String   @default("pending")
-  tableNumber String?
-  deliveryFee Int      @default(0) // 배달 주문일 때만 값이 들어감 (메뉴 금액 합계에는 미포함)
-  totalAmount Int      // 메뉴 합계 + 배달비
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  orderNumber   String   @unique // 사람이 보는 짧은 주문번호 (예: 0042)
+  orderType     String
+  status        String   @default("pending")
+  phone         String   // 포장/배달 공통 — 연락받을 전화번호
+  pickupTime    String?  // 포장 주문: 픽업 예정 시각 (예: "13:30")
+  address       String?  // 배달 주문: 배달 주소
+  paymentMethod String?  // 배달 주문: "card" | "cash"
+  deliveryFee   Int      @default(0) // 배달 주문일 때만 값이 들어감 (메뉴 금액 합계에는 미포함)
+  totalAmount   Int      // 메뉴 합계 + 배달비
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   storeId String
   store   Store  @relation(fields: [storeId], references: [id])

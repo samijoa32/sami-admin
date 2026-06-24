@@ -134,157 +134,163 @@ export function OrderTypeScreen({ storeId, onBack, onOrderComplete }: Props) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col px-5 py-6">
-      <button onClick={onBack} className="mb-4 self-start text-sm text-ink-900/50">
-        ← 장바구니로
-      </button>
+    <div className="flex h-screen flex-col bg-[#faf8f6]">
+      {/* 스크롤 가능한 콘텐츠 영역 */}
+      <div className="flex-1 overflow-y-auto px-5 py-6">
+        <button onClick={onBack} className="mb-4 self-start text-sm text-ink-900/50">
+          ← 장바구니로
+        </button>
 
-      <h1 className="mb-6 text-xl font-bold text-ink-900">주문 방식을 선택해주세요</h1>
+        <h1 className="mb-6 text-xl font-bold text-ink-900">주문 방식을 선택해주세요</h1>
 
-      {/* 주문 타입 선택 */}
-      <div className="mb-6 grid grid-cols-2 gap-2">
-        {(Object.keys(ORDER_TYPE_LABELS) as OrderType[]).map((type) => (
-          <button
-            key={type}
-            onClick={() => setOrderType(type)}
-            className={`rounded-xl py-4 text-sm font-medium transition ${
-              orderType === type
-                ? "bg-brand-500 text-white"
-                : "bg-white text-ink-900/60 ring-1 ring-ink-900/10"
-            }`}
-          >
-            {ORDER_TYPE_LABELS[type]}
-          </button>
-        ))}
-      </div>
+        {/* 주문 타입 선택 */}
+        <div className="mb-6 grid grid-cols-2 gap-2">
+          {(Object.keys(ORDER_TYPE_LABELS) as OrderType[]).map((type) => (
+            <button
+              key={type}
+              onClick={() => setOrderType(type)}
+              className={`rounded-xl py-4 text-sm font-medium transition ${
+                orderType === type
+                  ? "bg-brand-500 text-white"
+                  : "bg-white text-ink-900/60 ring-1 ring-ink-900/10"
+              }`}
+            >
+              {ORDER_TYPE_LABELS[type]}
+            </button>
+          ))}
+        </div>
 
-      {/* 전화번호 (공통) */}
-      <div className="mb-5">
-        <label className="mb-1.5 block text-sm font-medium text-ink-900/70">
-          연락받을 전화번호
-        </label>
-        <input
-          type="tel"
-          placeholder="010-0000-0000"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full rounded-xl border border-ink-900/10 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-        />
-      </div>
-
-      {/* 포장: 픽업 예정시간 */}
-      {orderType === "takeout" && (
+        {/* 전화번호 (공통) */}
         <div className="mb-5">
           <label className="mb-1.5 block text-sm font-medium text-ink-900/70">
-            픽업 예정시간
+            연락받을 전화번호
           </label>
-          {isClosedNow && (
-            <p className="mb-2 text-xs text-brand-600">
-              지금은 영업시간(11:00~21:00)이 아니에요. 가장 빠른 영업 시작 시간으로 예약됩니다.
-            </p>
-          )}
-          <select
-            value={pickupTime}
-            onChange={(e) => setPickupTime(e.target.value)}
+          <input
+            type="tel"
+            placeholder="010-0000-0000"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="w-full rounded-xl border border-ink-900/10 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-          >
-            <option value="">시간 선택</option>
-            {pickupTimeOptions.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
+          />
         </div>
-      )}
 
-      {/* 배달: 주소 + 결제방법 */}
-      {orderType === "delivery" && (
-        <>
+        {/* 포장: 픽업 예정시간 */}
+        {orderType === "takeout" && (
           <div className="mb-5">
             <label className="mb-1.5 block text-sm font-medium text-ink-900/70">
-              배달 주소
+              픽업 예정시간
             </label>
-            <input
-              type="text"
-              placeholder="도로명 주소, 동/호수까지 입력해주세요"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
+            {isClosedNow && (
+              <p className="mb-2 text-xs text-brand-600">
+                지금은 영업시간(11:00~21:00)이 아니에요. 가장 빠른 영업 시작 시간으로 예약됩니다.
+              </p>
+            )}
+            <select
+              value={pickupTime}
+              onChange={(e) => setPickupTime(e.target.value)}
               className="w-full rounded-xl border border-ink-900/10 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-            />
-          </div>
-
-          <div className="mb-5">
-            <label className="mb-1.5 block text-sm font-medium text-ink-900/70">
-              결제 방법
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {(Object.keys(PAYMENT_LABELS) as PaymentMethod[]).map((method) => (
-                <button
-                  key={method}
-                  onClick={() => setPaymentMethod(method)}
-                  className={`rounded-xl py-3 text-sm font-medium transition ${
-                    paymentMethod === method
-                      ? "bg-brand-500 text-white"
-                      : "bg-white text-ink-900/60 ring-1 ring-ink-900/10"
-                  }`}
-                >
-                  {PAYMENT_LABELS[method]}
-                </button>
+            >
+              <option value="">시간 선택</option>
+              {pickupTimeOptions.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
               ))}
-            </div>
-          </div>
-
-          {/* 배달비 안내 */}
-          {deliverySetting && (
-            <div className="mb-5 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-700">
-              {deliveryFee === 0 ? (
-                <span>🎉 무료배달 적용 (주문금액 {deliverySetting.freeThreshold.toLocaleString()}원 이상)</span>
-              ) : (
-                <span>
-                  배달비 {deliveryFee.toLocaleString()}원이 추가됩니다.
-                  {deliverySetting.freeThreshold > 0 && (
-                    <> ({deliverySetting.freeThreshold.toLocaleString()}원 이상 주문 시 무료)</>
-                  )}
-                </span>
-              )}
-            </div>
-          )}
-        </>
-      )}
-
-      {error && (
-        <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-          ⚠️ {error}
-        </div>
-      )}
-
-      {/* 주문 요약 */}
-      <div className="mb-6 rounded-2xl bg-white p-4 ring-1 ring-ink-900/5">
-        <p className="mb-2 text-sm font-medium text-ink-900/50">주문 요약</p>
-        {items.map((item) => (
-          <div key={item.menuId} className="flex justify-between py-1 text-sm">
-            <span>{item.name} × {item.quantity}</span>
-            <span>{(item.price * item.quantity).toLocaleString()}원</span>
-          </div>
-        ))}
-        {orderType === "delivery" && (
-          <div className="flex justify-between py-1 text-sm text-ink-900/60">
-            <span>배달비</span>
-            <span>{deliveryFee === 0 ? "무료" : `${deliveryFee.toLocaleString()}원`}</span>
+            </select>
           </div>
         )}
-        <div className="mt-2 flex justify-between border-t border-ink-900/10 pt-2 font-semibold">
-          <span>합계</span>
-          <span>{finalAmount.toLocaleString()}원</span>
+
+        {/* 배달: 주소 + 결제방법 */}
+        {orderType === "delivery" && (
+          <>
+            <div className="mb-5">
+              <label className="mb-1.5 block text-sm font-medium text-ink-900/70">
+                배달 주소
+              </label>
+              <input
+                type="text"
+                placeholder="도로명 주소, 동/호수까지 입력해주세요"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full rounded-xl border border-ink-900/10 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              />
+            </div>
+
+            <div className="mb-5">
+              <label className="mb-1.5 block text-sm font-medium text-ink-900/70">
+                결제 방법
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {(Object.keys(PAYMENT_LABELS) as PaymentMethod[]).map((method) => (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
+                    className={`rounded-xl py-3 text-sm font-medium transition ${
+                      paymentMethod === method
+                        ? "bg-brand-500 text-white"
+                        : "bg-white text-ink-900/60 ring-1 ring-ink-900/10"
+                    }`}
+                  >
+                    {PAYMENT_LABELS[method]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 배달비 안내 */}
+            {deliverySetting && (
+              <div className="mb-5 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-700">
+                {deliveryFee === 0 ? (
+                  <span>🎉 무료배달 적용 (주문금액 {deliverySetting.freeThreshold.toLocaleString()}원 이상)</span>
+                ) : (
+                  <span>
+                    배달비 {deliveryFee.toLocaleString()}원이 추가됩니다.
+                    {deliverySetting.freeThreshold > 0 && (
+                      <> ({deliverySetting.freeThreshold.toLocaleString()}원 이상 주문 시 무료)</>
+                    )}
+                  </span>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {error && (
+          <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {/* 주문 요약 */}
+        <div className="rounded-2xl bg-white p-4 ring-1 ring-ink-900/5">
+          <p className="mb-2 text-sm font-medium text-ink-900/50">주문 요약</p>
+          {items.map((item) => (
+            <div key={item.menuId} className="flex justify-between py-1 text-sm">
+              <span>{item.name} × {item.quantity}</span>
+              <span>{(item.price * item.quantity).toLocaleString()}원</span>
+            </div>
+          ))}
+          {orderType === "delivery" && (
+            <div className="flex justify-between py-1 text-sm text-ink-900/60">
+              <span>배달비</span>
+              <span>{deliveryFee === 0 ? "무료" : `${deliveryFee.toLocaleString()}원`}</span>
+            </div>
+          )}
+          <div className="mt-2 flex justify-between border-t border-ink-900/10 pt-2 font-semibold">
+            <span>합계</span>
+            <span>{finalAmount.toLocaleString()}원</span>
+          </div>
         </div>
       </div>
 
-      <button
-        onClick={handleConfirm}
-        disabled={createOrder.isPending}
-        className="mt-auto w-full rounded-2xl bg-brand-500 py-4 text-base font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
-      >
-        {createOrder.isPending ? "접수 중..." : "주문 확인"}
-      </button>
+      {/* 하단 고정 버튼 — 항목이 아무리 많아도 항상 화면에 표시 */}
+      <div className="flex-shrink-0 border-t border-ink-900/5 bg-[#faf8f6] px-5 pb-6 pt-3">
+        <button
+          onClick={handleConfirm}
+          disabled={createOrder.isPending}
+          className="w-full rounded-2xl bg-brand-500 py-4 text-base font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
+        >
+          {createOrder.isPending ? "접수 중..." : "주문 확인"}
+        </button>
+      </div>
     </div>
   );
 }

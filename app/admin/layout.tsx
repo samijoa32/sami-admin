@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useNewOrderNotification } from "@/hooks/useNewOrderNotification";
-import { OrderNotificationBadge, OrderNotificationToast } from "@/components/ui/Notification";
+import { OrderNotificationBadge, OrderNotificationToast, OrderAlertModal } from "@/components/ui/Notification";
+import { api } from "@/trpc/react";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "대시보드", icon: "📊", showBadge: true },
@@ -15,7 +16,16 @@ const NAV_ITEMS = [
 
 function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { pendingCount, showToast, toastMessage, dismissToast } = useNewOrderNotification();
+  const router = useRouter();
+  const { pendingCount, showToast, toastMessage, dismissToast, showModal, newOrderCount, dismissModal } =
+    useNewOrderNotification();
+
+  const logout = api.auth.logout.useMutation({
+    onSuccess: () => {
+      router.push("/admin/login");
+      router.refresh();
+    },
+  });
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -51,9 +61,16 @@ function AdminShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* 하단 매장 정보 */}
-        <div className="border-t border-gray-100 px-4 py-4">
+        {/* 하단: 매장 정보 + 로그아웃 */}
+        <div className="border-t border-gray-100 px-4 py-4 space-y-2">
           <p className="text-xs text-gray-400">본점 · 미사2호점</p>
+          <button
+            onClick={() => logout.mutate()}
+            disabled={logout.isPending}
+            className="w-full rounded-xl border border-gray-200 py-2 text-xs font-medium text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+          >
+            {logout.isPending ? "로그아웃 중..." : "로그아웃"}
+          </button>
         </div>
       </aside>
 
@@ -62,11 +79,18 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* 실시간 주문 알림 토스트 */}
+      {/* 실시간 주문 알림 토스트 (하단 우측 작은 알림) */}
       <OrderNotificationToast
         message={toastMessage}
         show={showToast}
         onDismiss={dismissToast}
+      />
+
+      {/* 신규 주문 모달 (중앙 팝업) */}
+      <OrderAlertModal
+        show={showModal}
+        newOrderCount={newOrderCount}
+        onDismiss={dismissModal}
       />
     </div>
   );

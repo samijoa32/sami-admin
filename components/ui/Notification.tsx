@@ -95,6 +95,86 @@ export function OrderNotificationToast({ message, show, onDismiss }: ToastProps)
 }
 
 /* ───────────────────────────────────────────
+   OrderAlertModal
+   신규 주문 발생 시 화면 중앙에 뜨는 팝업 모달
+─────────────────────────────────────────── */
+type AlertModalProps = {
+  show: boolean;
+  newOrderCount: number;
+  onDismiss: () => void;
+};
+
+export function OrderAlertModal({ show, newOrderCount, onDismiss }: AlertModalProps) {
+  useEffect(() => {
+    if (!show) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "Enter") onDismiss();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [show, onDismiss]);
+
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center">
+      {/* 배경 오버레이 */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onDismiss}
+      />
+
+      {/* 모달 카드 */}
+      <div className="relative mx-4 w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl text-center animate-modal-in">
+        {/* 벨 아이콘 (흔들림 애니메이션) */}
+        <div className="mb-4 flex justify-center">
+          <span className="text-6xl animate-bell">🔔</span>
+        </div>
+
+        <h2 className="text-xl font-bold text-gray-900 mb-2">새 주문 알림!</h2>
+        <p className="text-gray-500 text-sm mb-1">
+          {newOrderCount === 1
+            ? "새로운 주문이 1건 들어왔습니다."
+            : `새로운 주문이 ${newOrderCount}건 들어왔습니다.`}
+        </p>
+        <p className="text-gray-400 text-xs mb-6">대시보드에서 주문을 확인하고 상태를 변경해주세요.</p>
+
+        <button
+          onClick={onDismiss}
+          className="w-full rounded-2xl bg-red-600 py-3.5 text-sm font-bold text-white transition hover:bg-red-700 active:scale-95"
+          autoFocus
+        >
+          확인
+        </button>
+      </div>
+
+      <style jsx>{`
+        @keyframes modal-in {
+          from { opacity: 0; transform: scale(0.85) translateY(12px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-modal-in {
+          animation: modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes bell {
+          0%, 100% { transform: rotate(0deg); }
+          15%       { transform: rotate(-20deg); }
+          30%       { transform: rotate(20deg); }
+          45%       { transform: rotate(-15deg); }
+          60%       { transform: rotate(15deg); }
+          75%       { transform: rotate(-8deg); }
+          90%       { transform: rotate(8deg); }
+        }
+        .animate-bell {
+          display: inline-block;
+          animation: bell 0.8s ease-in-out 2;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────────
    Toast (범용)
    showToast 유틸에서 사용하는 단순 토스트
 ─────────────────────────────────────────── */

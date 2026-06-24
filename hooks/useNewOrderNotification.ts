@@ -1,47 +1,59 @@
 "use client";
 
-/**
- * useNewOrderNotification
- * - 폴링 방식으로 신규 주문(pending) 개수를 5초마다 확인
- * - 이전보다 주문이 늘었으면 토스트 알림 + 알림음 재생
- */
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { api } from "@/trpc/react";
 
 type NotificationState = {
-  pendingCount: number;           // 현재 접수 대기 주문 수
-  showToast: boolean;             // 토스트 표시 여부
-  toastMessage: string;          // 토스트 메시지
-  dismissToast: () => void;      // 토스트 닫기
+  pendingCount: number;
+  showToast: boolean;
+  toastMessage: string;
+  dismissToast: () => void;
+  showModal: boolean;
+  newOrderCount: number;
+  dismissModal: () => void;
 };
 
 export function useNewOrderNotification(): NotificationState {
   const prevCountRef = useRef<number | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [newOrderCount, setNewOrderCount] = useState(0);
 
   const { data } = api.admin.getPendingOrderCount.useQuery(undefined, {
-    refetchInterval: 5000, // 5초마다 폴링
+    refetchInterval: 5000,
     refetchIntervalInBackground: true,
-    retry: false, // 인증 안 된 상태에서는 재시도하지 않음
+    retry: false,
   });
 
   const pendingCount = data?.count ?? 0;
 
-  const playNotificationSound = useCallback(() => {
+  const playAlarm = useCallback(() => {
     try {
       const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.4);
+
+      const beep = (startTime: number, freq: number, duration: number, volume = 0.5) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(volume, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+
+      const t = ctx.currentTime;
+      // 딩-딩-딩! 3회 연속 울림
+      beep(t,       880, 0.18, 0.6);
+      beep(t + 0.25, 880, 0.18, 0.6);
+      beep(t + 0.50, 1100, 0.30, 0.7);
+      // 0.9초 후 한 번 더
+      beep(t + 0.9,  880, 0.18, 0.6);
+      beep(t + 1.15, 880, 0.18, 0.6);
+      beep(t + 1.40, 1100, 0.35, 0.7);
     } catch {
       // AudioContext 미지원 환경 무시
     }
@@ -53,23 +65,31 @@ export function useNewOrderNotification(): NotificationState {
       return;
     }
 
-    const newOrders = pendingCount - prevCountRef.current;
-    if (newOrders > 0) {
-      const msg = newOrders === 1
-        ? "새로운 주문이 1건 들어왔습니다!"
-        : `새로운 주문이 ${newOrders}건 들어왔습니다!`;
+    const diff = pendingCount - prevCountRef.current;
+    if (diff > 0) {
+      const msg =
+        diff === 1
+          ? "새로운 주문이 1건 들어왔습니다!"
+          : `새로운 주문이 ${diff}건 들어왔습니다!`;
+
+      // 토스트 (하단 우측)
       setToastMessage(msg);
       setShowToast(true);
-      playNotificationSound();
+      setTimeout(() => setShowToast(false), 6000);
 
-      // 5초 후 자동 닫기
-      setTimeout(() => setShowToast(false), 5000);
+      // 중앙 모달 팝업
+      setNewOrderCount(diff);
+      setShowModal(true);
+
+      // 알람 2회 반복
+      playAlarm();
     }
 
     prevCountRef.current = pendingCount;
-  }, [pendingCount, playNotificationSound]);
+  }, [pendingCount, playAlarm]);
 
   const dismissToast = useCallback(() => setShowToast(false), []);
+  const dismissModal = useCallback(() => setShowModal(false), []);
 
-  return { pendingCount, showToast, toastMessage, dismissToast };
+  return { pendingCount, showToast, toastMessage, dismissToast, showModal, newOrderCount, dismissModal };
 }

@@ -74,7 +74,7 @@ export const adminRouter = createTRPCRouter({
       });
 
       // 클라이언트가 다루기 쉬운 평탄화된 형태로 반환
-      return orders.map((o: any) => ({
+      return orders.map((o) => ({
         id: o.id,
         orderNumber: o.orderNumber,
         storeName: o.store.name,

@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 
 type Category = { id: string; name: string };
+type Store = { id: string; name: string };
 
 type MenuFormData = {
   name: string;
   price: number;
   categoryId: string;
+  storeId: string;
   imageUrl?: string;
   description?: string;
 };
@@ -17,20 +19,23 @@ type Props = {
     name: string;
     price: number;
     categoryId: string;
+    storeId?: string;
     imageUrl?: string | null;
     description?: string | null;
   } | null;
   categories: Category[];
+  stores: Store[];
   onSubmit: (data: MenuFormData) => void;
   onCancel: () => void;
   isLoading: boolean;
 };
 
-export function MenuForm({ initialData, categories, onSubmit, onCancel, isLoading }: Props) {
+export function MenuForm({ initialData, categories, stores, onSubmit, onCancel, isLoading }: Props) {
   const [form, setForm] = useState<MenuFormData>({
     name: "",
     price: 0,
     categoryId: categories[0]?.id ?? "",
+    storeId: stores[0]?.id ?? "",
     imageUrl: "",
     description: "",
   });
@@ -43,17 +48,19 @@ export function MenuForm({ initialData, categories, onSubmit, onCancel, isLoadin
         name: initialData.name,
         price: initialData.price,
         categoryId: initialData.categoryId,
+        storeId: initialData.storeId ?? stores[0]?.id ?? "",
         imageUrl: initialData.imageUrl ?? "",
         description: initialData.description ?? "",
       });
     }
-  }, [initialData]);
+  }, [initialData, stores]);
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
     if (!form.name.trim()) newErrors.name = "메뉴명을 입력하세요.";
     if (!form.price || form.price <= 0) newErrors.price = "올바른 가격을 입력하세요.";
     if (!form.categoryId) newErrors.categoryId = "카테고리를 선택하세요.";
+    if (!form.storeId) newErrors.storeId = "매장을 선택하세요.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -84,6 +91,24 @@ export function MenuForm({ initialData, categories, onSubmit, onCancel, isLoadin
         />
         {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
       </div>
+
+      {/* 매장 */}
+      {stores.length > 1 && (
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700">매장 *</label>
+          <select
+            value={form.storeId}
+            onChange={(e) => setForm({ ...form, storeId: e.target.value })}
+            className={inputClass("storeId")}
+          >
+            <option value="">매장 선택</option>
+            {stores.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+          {errors.storeId && <p className="mt-1 text-xs text-red-500">{errors.storeId}</p>}
+        </div>
+      )}
 
       {/* 카테고리 */}
       <div>

@@ -11,7 +11,7 @@ export const menuRouter = createTRPCRouter({
         include: { category: true },
         orderBy: [{ category: { sortOrder: "asc" } }, { name: "asc" }],
       });
-      return menus.map((m: any) => ({
+      return menus.map((m) => ({
         id: m.id,
         name: m.name,
         price: m.price,
@@ -29,7 +29,7 @@ export const menuRouter = createTRPCRouter({
       include: { category: true, store: true },
       orderBy: [{ category: { sortOrder: "asc" } }, { name: "asc" }],
     });
-    return menus.map((m: any) => ({
+    return menus.map((m) => ({
       id: m.id,
       name: m.name,
       price: m.price,
@@ -64,6 +64,7 @@ export const menuRouter = createTRPCRouter({
         name: z.string().min(1).optional(),
         price: z.number().positive().optional(),
         categoryId: z.string().optional(),
+        storeId: z.string().optional(),
         imageUrl: z.string().optional(),
         description: z.string().optional(),
       })

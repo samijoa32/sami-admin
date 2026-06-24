@@ -7,7 +7,7 @@ export const categoryRouter = createTRPCRouter({
       orderBy: { sortOrder: "asc" },
       include: { _count: { select: { menus: true } } },
     });
-    return categories.map((c: any) => ({
+    return categories.map((c) => ({
       id: c.id,
       name: c.name,
       sortOrder: c.sortOrder,

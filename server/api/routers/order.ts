@@ -2,10 +2,14 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
-// 주문번호 생성: 0001, 0002 ... (매일 자정 기준으로 리셋하지 않고 누적 — 단순화)
-async function generateOrderNumber(db: typeof import("@/server/db").db) {
-  const count = await db.order.count();
-  return String(count + 1).padStart(4, "0");
+// 주문번호 생성: 가장 큰 기존 번호 + 1 (count 대신 max 사용해 삭제/동시성 문제 방지)
+async function generateOrderNumber(db: typeof import("@/server/db").db): Promise<string> {
+  const last = await db.order.findFirst({
+    orderBy: { orderNumber: "desc" },
+    select: { orderNumber: true },
+  });
+  const next = last ? Number(last.orderNumber) + 1 : 1;
+  return String(next).padStart(4, "0");
 }
 
 export const orderRouter = createTRPCRouter({
@@ -54,7 +58,7 @@ export const orderRouter = createTRPCRouter({
         where: { id: { in: menuIds } },
       });
 
-      const soldOutMenu = menus.find((m: any) => m.soldOut);
+      const soldOutMenu = menus.find((m) => m.soldOut);
       if (soldOutMenu) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -63,7 +67,7 @@ export const orderRouter = createTRPCRouter({
       }
 
       const menuMap = new Map<string, { name: string; price: number; soldOut: boolean }>(
-        menus.map((m: any) => [m.id, m])
+        menus.map((m) => [m.id, m])
       );
       let menuTotal = 0;
       const orderItemsData = input.items.map((item) => {
@@ -94,25 +98,35 @@ export const orderRouter = createTRPCRouter({
 
       const totalAmount = menuTotal + deliveryFee;
 
-      const orderNumber = await generateOrderNumber(ctx.db);
+      // 동시 주문으로 인한 orderNumber 충돌 시 최대 5회 재시도
+      let order;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const orderNumber = await generateOrderNumber(ctx.db);
+        try {
+          order = await ctx.db.order.create({
+            data: {
+              orderNumber,
+              storeId: input.storeId,
+              orderType: input.orderType,
+              phone: input.phone,
+              pickupTime: input.orderType === "takeout" ? input.pickupTime : undefined,
+              address: input.orderType === "delivery" ? input.address : undefined,
+              paymentMethod: input.orderType === "delivery" ? input.paymentMethod : undefined,
+              deliveryFee,
+              totalAmount,
+              items: { create: orderItemsData },
+            },
+            include: { items: { include: { menu: true } } },
+          });
+          break;
+        } catch (e: unknown) {
+          const isUniqueViolation =
+            typeof e === "object" && e !== null && "code" in e && (e as { code: string }).code === "P2002";
+          if (!isUniqueViolation || attempt === 4) throw e;
+        }
+      }
 
-      const order = await ctx.db.order.create({
-        data: {
-          orderNumber,
-          storeId: input.storeId,
-          orderType: input.orderType,
-          phone: input.phone,
-          pickupTime: input.orderType === "takeout" ? input.pickupTime : undefined,
-          address: input.orderType === "delivery" ? input.address : undefined,
-          paymentMethod: input.orderType === "delivery" ? input.paymentMethod : undefined,
-          deliveryFee,
-          totalAmount,
-          items: { create: orderItemsData },
-        },
-        include: { items: { include: { menu: true } } },
-      });
-
-      return order;
+      return order!;
     }),
 
   // 주문 현황 조회 (고객 화면 — 폴링용)

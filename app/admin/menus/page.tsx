@@ -73,7 +73,7 @@ export default function MenuManagePage() {
     if (editingMenu) {
       updateMenu.mutate({ id: editingMenu.id, ...data });
     } else {
-      createMenu.mutate({ ...data, storeId: stores[0]?.id ?? "" });
+      createMenu.mutate(data);
     }
   };
 
@@ -127,6 +127,7 @@ export default function MenuManagePage() {
             <MenuForm
               initialData={editingMenu}
               categories={categories}
+              stores={stores}
               onSubmit={handleFormSubmit}
               onCancel={handleFormClose}
               isLoading={createMenu.isPending || updateMenu.isPending}
@@ -148,6 +149,8 @@ type Menu = {
   price: number;
   categoryId: string;
   categoryName: string;
+  storeId?: string;
+  storeName?: string;
   imageUrl: string | null;
   soldOut: boolean;
   description: string | null;
@@ -157,6 +160,7 @@ type MenuFormData = {
   name: string;
   price: number;
   categoryId: string;
+  storeId: string;
   imageUrl?: string;
   description?: string;
 };

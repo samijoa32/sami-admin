@@ -17,6 +17,8 @@ export const authRouter = createTRPCRouter({
       }
 
       if (input.password !== correctPassword) {
+        // 브루트포스 방어: 실패 시 500ms 지연
+        await new Promise((r) => setTimeout(r, 500));
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "비밀번호가 일치하지 않습니다.",

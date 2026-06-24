@@ -12,8 +12,10 @@ function LoginForm() {
 
   const login = api.auth.login.useMutation({
     onSuccess: () => {
-      const redirect = searchParams.get("redirect") ?? "/admin";
-      router.push(redirect);
+      const raw = searchParams.get("redirect") ?? "/admin";
+      // 외부 URL 리다이렉트 방지: 반드시 /로 시작하고 //로 시작하지 않아야 함
+      const safeRedirect = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/admin";
+      router.push(safeRedirect);
       router.refresh();
     },
     onError: (err) => {

@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
   const utils = api.useUtils();
 
   const { data, isLoading } = api.admin.getRecentOrders.useQuery(
-    { limit: 30 },
+    { limit: 100 },
     { refetchInterval: 5000 }
   );
   const orders: RecentOrder[] = data ?? [];

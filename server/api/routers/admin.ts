@@ -68,12 +68,14 @@ export const adminRouter = createTRPCRouter({
               }
             : {}),
         },
-        include: { store: true },
+        include: {
+          store: true,
+          items: { include: { menu: true } },
+        },
         orderBy: { createdAt: "desc" },
-        take: 200,
+        // 건수 제한 없음 — 날짜 필터로 범위 조절
       });
 
-      // 클라이언트가 다루기 쉬운 평탄화된 형태로 반환
       return orders.map((o) => ({
         id: o.id,
         orderNumber: o.orderNumber,
@@ -85,7 +87,13 @@ export const adminRouter = createTRPCRouter({
         paymentMethod: o.paymentMethod,
         status: o.status,
         totalAmount: o.totalAmount,
+        deliveryFee: o.deliveryFee,
         createdAt: o.createdAt,
+        items: o.items.map((i) => ({
+          name: i.menu.name,
+          quantity: i.quantity,
+          price: i.price,
+        })),
       }));
     }),
 });

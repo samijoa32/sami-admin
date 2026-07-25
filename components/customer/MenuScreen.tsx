@@ -50,7 +50,7 @@ export function MenuScreen({ storeId, storeName, onOpenCart, onBack, showBackBut
           ) : (
             <div className="w-16" />
           )}
-          <h1 className="text-base font-semibold text-ink-900">{storeName}</h1>
+          <img src="/sami-logo.png" alt="사미반점" className="h-8 object-contain" />
           <div className="w-16" />
         </div>
 

@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "사미반점 - 온라인 주문",
-  description: "사미반점 온라인 주문 시스템",
+  description: "사미반점 하남 본점 온라인 주문",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -15,8 +15,13 @@ export const metadata: Metadata = {
     icon: "/icons/icon-192.png",
     apple: "/icons/icon-192.png",
   },
+  openGraph: {
+    title: "사미반점 - 온라인 주문",
+    description: "사미반점 하남 본점 온라인 주문",
+    images: ["/icons/icon-512.png"],
+    type: "website",
+  },
 };
-
 export const viewport: Viewport = {
   themeColor: "#c2410c",
   width: "device-width",

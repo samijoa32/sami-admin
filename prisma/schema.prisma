@@ -1,29 +1,16 @@
-// 사미반점 온라인 주문 시스템 — 데이터베이스 스키마
-// 개발: SQLite / 운영: Postgres(Supabase)로 provider만 교체하면 됩니다.
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// ── 배달비 설정 ─────────────────────────────────
-// 단일 행만 사용 (id를 고정값으로 둠)
-model DeliverySetting {
-  id              String @id @default("delivery_setting")
-  deliveryFee     Int    @default(3000)  // 기본 배달비
-  freeThreshold   Int    @default(15000) // 이 금액 이상이면 배달비 무료 (0이면 항상 부과)
-}
-
-// ── 매장 ──────────────────────────────────────
 model Store {
   id        String   @id @default(cuid())
-  name      String   // "하남 본점" | "미사2호점"
-  slug      String   @unique // "main" | "misa2"
+  name      String
+  slug      String   @unique
   address   String?
   phone     String?
   createdAt DateTime @default(now())
@@ -32,7 +19,6 @@ model Store {
   orders Order[]
 }
 
-// ── 카테고리 ──────────────────────────────────
 model Category {
   id        String @id @default(cuid())
   name      String
@@ -41,7 +27,6 @@ model Category {
   menus Menu[]
 }
 
-// ── 메뉴 ──────────────────────────────────────
 model Menu {
   id          String   @id @default(cuid())
   name        String
@@ -60,23 +45,23 @@ model Menu {
   orderItems OrderItem[]
 }
 
-// ── 주문 ──────────────────────────────────────
-// 참고: SQLite는 enum을 지원하지 않아 String으로 관리합니다.
-// orderType: "takeout" | "delivery"
-// status:    "pending" | "cooking" | "done"
-// paymentMethod (배달 주문만): "card" | "cash"
+model DeliverySetting {
+  id            String @id @default("delivery_setting")
+  deliveryFee   Int    @default(3000)
+  freeThreshold Int    @default(15000)
+}
 
 model Order {
   id            String   @id @default(cuid())
-  orderNumber   String   @unique // 사람이 보는 짧은 주문번호 (예: 0042)
+  orderNumber   String   @unique
   orderType     String
   status        String   @default("pending")
-  phone         String   // 포장/배달 공통 — 연락받을 전화번호
-  pickupTime    String?  // 포장 주문: 픽업 예정 시각 (예: "13:30")
-  address       String?  // 배달 주문: 배달 주소
-  paymentMethod String?  // 배달 주문: "card" | "cash"
-  deliveryFee   Int      @default(0) // 배달 주문일 때만 값이 들어감 (메뉴 금액 합계에는 미포함)
-  totalAmount   Int      // 메뉴 합계 + 배달비
+  phone         String
+  pickupTime    String?
+  address       String?
+  paymentMethod String?
+  deliveryFee   Int      @default(0)
+  totalAmount   Int
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -86,11 +71,10 @@ model Order {
   items OrderItem[]
 }
 
-// ── 주문 항목 ─────────────────────────────────
 model OrderItem {
   id       String @id @default(cuid())
   quantity Int
-  price    Int // 주문 시점 가격 (메뉴 가격이 나중에 바뀌어도 주문 기록은 보존)
+  price    Int
 
   orderId String
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
